@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.3.3",
-	"EngineVersion" : "4.24.0",
+	"VersionName": "1.3.3-AHAFork-1",
+	"EngineVersion" : "4.23.0",
 	"FriendlyName": "Socket.IO Client",
 	"Description": "Real-time networking library Socket.IO Client usable from blueprints and c++.",
 	"Category": "Networking",
@@ -70,7 +70,7 @@
 		},
 		{
 			"Name": "SIOJEditorPlugin",
-			"Type": "Editor",
+			"Type": "Developer",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
 				"Win64",

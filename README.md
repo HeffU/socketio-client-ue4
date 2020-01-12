@@ -1,3 +1,11 @@
+# Personal fork
+This is a personal fork of the original changes, none of the changes are supported.
+
+The main aim is to enable async sending of ACK messages.
+
+Any code changes are, like the original repo, licensed under an MIT license, see LICENSE
+
+
 # socketio-client-ue4
 Socket.io client plugin for UE4.
 
