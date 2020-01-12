@@ -108,6 +108,16 @@ public:
 
 	/**
 	* Connect to a socket.io server, optional method if auto-connect is set to true.
+	* Overloaded function where you don't care about query and headers
+	*
+	* @param AddressAndPort	the address in URL format with port
+	* @param AutoAck Enables automatic response to messages requesting ACK responses (default true)
+	*
+	*/
+	void Connect(const FString& InAddressAndPort, bool AutoAck);
+
+	/**
+	* Connect to a socket.io server, optional method if auto-connect is set to true.
 	* Query and headers are defined by a {'stringKey':'stringValue'} SIOJson Object
 	*
 	* @param AddressAndPort	the address in URL format with port
@@ -119,6 +129,22 @@ public:
 		const FString& InAddressAndPort,
 		const TSharedPtr<FJsonObject>& Query, 
 		const TSharedPtr<FJsonObject>& Headers);
+
+	/**
+	* Connect to a socket.io server, optional method if auto-connect is set to true.
+	* Query and headers are defined by a {'stringKey':'stringValue'} SIOJson Object
+	*
+	* @param AddressAndPort	the address in URL format with port
+	* @param Query http query as a SIOJsonObject with string keys and values
+	* @param Headers http header as a SIOJsonObject with string keys and values
+	* @param AutoAck Enables automatic response to messages requesting ACK responses (default true)
+	*
+	*/
+	void Connect(
+		const FString& InAddressAndPort,
+		const TSharedPtr<FJsonObject>& Query,
+		const TSharedPtr<FJsonObject>& Headers,
+		bool AutoAck);
 
 	/** 
 	* Join a desired namespace. Keep in mind that emitting to a namespace will auto-join it

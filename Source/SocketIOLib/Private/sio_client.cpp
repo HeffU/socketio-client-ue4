@@ -88,19 +88,25 @@ namespace sio
 
     void client::connect(const std::string& uri)
     {
-        m_impl->connect(uri, {}, {});
+        m_impl->connect(uri, {}, {}, true);
     }
 
     void client::connect(const std::string& uri, const std::map<string,string>& query)
     {
-        m_impl->connect(uri, query, {});
+        m_impl->connect(uri, query, {}, true);
     }
 
     void client::connect(const std::string& uri, const std::map<std::string,std::string>& query,
                          const std::map<std::string,std::string>& http_extra_headers)
     {
-        m_impl->connect(uri, query, http_extra_headers);
+        m_impl->connect(uri, query, http_extra_headers, true);
     }
+
+	void client::connect(const std::string& uri, const std::map<std::string, std::string>& query,
+		const std::map<std::string, std::string>& http_extra_headers, bool auto_ack)
+	{
+		m_impl->connect(uri, query, http_extra_headers, auto_ack);
+	}
     
     socket::ptr const& client::socket(const std::string& nsp)
     {

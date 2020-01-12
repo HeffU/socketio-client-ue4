@@ -118,7 +118,7 @@ namespace sio
     {
     public:
         
-        impl(client_impl *,std::string const&);
+        impl(client_impl *,std::string const&, bool);
         ~impl();
         
         void on(std::string const& event_name,event_listener_aux const& func);
@@ -184,6 +184,7 @@ namespace sio
         bool m_connected;
         std::string m_nsp;
         
+        bool m_auto_ack;
         std::map<unsigned int, std::function<void (message::list const&)> > m_acks;
         
         std::map<std::string, event_listener> m_event_binding;
@@ -238,10 +239,11 @@ namespace sio
         m_error_listener = nullptr;
     }
     
-    socket::impl::impl(client_impl *client,std::string const& nsp):
+    socket::impl::impl(client_impl *client,std::string const& nsp, bool auto_ack):
         m_client(client),
         m_connected(false),
-        m_nsp(nsp)
+        m_nsp(nsp),
+        m_auto_ack(auto_ack)
     {
         NULL_GUARD(client);
         if(m_client->opened())
@@ -456,7 +458,7 @@ namespace sio
         event ev = event_adapter::create_event(nsp,name, std::move(message),needAck);
         event_listener func = this->get_bind_listener_locked(name);
         if(func)func(ev);
-        if(needAck)
+        if(needAck && m_auto_ack)
         {
             this->ack(msgId, name, ev.get_ack_message());
         }
@@ -538,8 +540,8 @@ namespace sio
         return socket::event_listener();
     }
     
-    socket::socket(client_impl* client,std::string const& nsp):
-        m_impl(new impl(client,nsp))
+    socket::socket(client_impl* client,std::string const& nsp, bool auto_ack):
+        m_impl(new impl(client,nsp,auto_ack))
     {
     }
     

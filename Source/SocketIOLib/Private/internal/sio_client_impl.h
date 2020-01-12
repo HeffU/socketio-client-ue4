@@ -124,7 +124,7 @@ namespace sio
 
 		// Client Functions - such as send, etc.
 		void connect(const std::string& uri, const std::map<std::string, std::string>& queryString,
-                     const std::map<std::string, std::string>& httpExtraHeaders);
+                     const std::map<std::string, std::string>& httpExtraHeaders, bool auto_ack);
 
 		sio::socket::ptr const& socket(const std::string& nsp);
 
@@ -256,6 +256,9 @@ namespace sio
 
 		//toggle this to enable/disable nagle's algorithm
 		bool m_tcp_no_delay;
+
+		//determines if the sockets should automatically respond with an ACK if the sio event wanted one
+		bool m_sockets_auto_ack;
 
 		friend class sio::client;
 		friend class sio::socket;

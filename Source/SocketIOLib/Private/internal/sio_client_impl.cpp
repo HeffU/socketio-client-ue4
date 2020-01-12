@@ -57,7 +57,8 @@ namespace sio
 		m_reconn_delay_max(25000),
 		m_reconn_attempts(0xFFFFFFFF),
 		m_reconn_made(0),
-		m_tcp_no_delay(true)	//nagle's algorithm disabled by default
+		m_tcp_no_delay(true),	//nagle's algorithm disabled by default
+		m_sockets_auto_ack(true)
 	{
 		using websocketpp::log::alevel;
 #ifndef DEBUG
@@ -87,8 +88,11 @@ namespace sio
 		sync_close();
 	}
 
-	void client_impl::connect(const string& uri, const map<string,string>& query, const map<string, string>& headers)
+	void client_impl::connect(const string& uri, const map<string,string>& query, const map<string, string>& headers, bool auto_ack)
 	{
+		//set the current auto ack setting
+		m_sockets_auto_ack = auto_ack;
+
 		//reset connection attempts to last set
 		m_reconn_attempts = m_reconn_attempts_when_closed;
 
@@ -159,7 +163,7 @@ namespace sio
 		}
 		else
 		{
-			pair<const string, socket::ptr> p(aux,shared_ptr<sio::socket>(new sio::socket(this,aux)));
+			pair<const string, socket::ptr> p(aux,shared_ptr<sio::socket>(new sio::socket(this,aux,m_sockets_auto_ack)));
 			return (m_sockets.insert(p).first)->second;
 		}
 	}

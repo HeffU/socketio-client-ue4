@@ -27,6 +27,11 @@ FSocketIONative::FSocketIONative()
 
 void FSocketIONative::Connect(const FString& InAddressAndPort, const TSharedPtr<FJsonObject>& Query /*= nullptr*/, const TSharedPtr<FJsonObject>& Headers /*= nullptr*/)
 {
+	Connect(InAddressAndPort, Query, Headers, true);
+}
+
+void FSocketIONative::Connect(const FString& InAddressAndPort, const TSharedPtr<FJsonObject>& Query /*= nullptr*/, const TSharedPtr<FJsonObject>& Headers /*= nullptr*/, bool AutoAck)
+{
 	std::string StdAddressString = USIOMessageConvert::StdString(InAddressAndPort);
 	if (InAddressAndPort.IsEmpty())
 	{
@@ -68,17 +73,22 @@ void FSocketIONative::Connect(const FString& InAddressAndPort, const TSharedPtr<
 				return;
 			}
 		}
-		PrivateClient->connect(StdAddressString, QueryMap, HeadersMap);
+		PrivateClient->connect(StdAddressString, QueryMap, HeadersMap, AutoAck);
 	});
 
 }
 
 void FSocketIONative::Connect(const FString& InAddressAndPort)
 {
+	Connect(InAddressAndPort, true);
+}
+
+void FSocketIONative::Connect(const FString& InAddressAndPort, bool AutoAck)
+{
 	TSharedPtr<FJsonObject> Query = MakeShareable(new FJsonObject);
 	TSharedPtr<FJsonObject> Headers = MakeShareable(new FJsonObject);
 
-	Connect(InAddressAndPort, Query, Headers);
+	Connect(InAddressAndPort, Query, Headers, AutoAck);
 }
 
 void FSocketIONative::JoinNamespace(const FString& Namespace)
