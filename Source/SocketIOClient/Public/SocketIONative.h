@@ -309,8 +309,6 @@ public:
 	* (Overloaded) Emit an event without a message
 	*
 	* @param EventName				Event name
-	* @param Struct					UStruct type usually obtained via e.g. FMyStructType::StaticStruct()
-	* @param StructPtr				Pointer to the actual struct memory e.g. &MyStruct
 	* @param CallbackFunction		Optional callback TFunction
 	* @param Namespace				Optional Namespace within socket.io
 	*/
@@ -346,6 +344,76 @@ public:
 		uint8* Data,
 		int32 DataLength,
 		const FString& Namespace = TEXT("/"));
+
+	/**
+	* ACK an event with a specific ID and a JsonValue message
+	*
+	* @param EventName				Event name
+	* @param MessageId				Message Id
+	* @param Message				FJsonValue
+	*/
+	void Ack(
+		const FString& EventName,
+		const int MessageId,
+		const TSharedPtr<FJsonValue>& Message = nullptr);
+
+	/**
+	* ACK an event with a specific ID and a JsonObject message
+	*
+	* @param EventName				Event name
+	* @param MessageId				Message Id
+	* @param Message				FJsonObject
+	*/
+	void Ack(
+		const FString& EventName,
+		const int MessageId,
+		const TSharedPtr<FJsonObject>& ObjectMessage = nullptr);
+	
+	/**
+	* ACK an event with a specific ID and an array of JsonValues as message
+	*
+	* @param EventName				Event name
+	* @param MessageId				Message Id
+	* @param ArrayMessage			Message in an TArray of FJsonValues
+	*/
+	void Ack(
+		const FString& EventName,
+		const int MessageId,
+		const TArray<TSharedPtr<FJsonValue>>& ArrayMessage);
+
+	/**
+	* ACK an event with a specific ID and a string message
+	*
+	* @param EventName				Event name
+	* @param MessageId				Message Id
+	* @param Message				FString
+	*/
+	void Ack(
+		const FString& EventName,
+		const int MessageId,
+		const FString& Message);
+
+	/**
+	* ACK an event with a specific ID but without any message
+	*
+	* @param EventName				Event name
+	* @param MessageId				Message Id
+	*/
+	void AckNoMessage(
+		const FString& EventName,
+		const int MessageId);
+
+	/**
+	* ACK an event with a specific ID and a raw sio::message event
+	*
+	* @param EventName				Event name
+	* @param MessageId				Message Id
+	* @param Message				Message in sio::message::list format
+	*/
+	void AckRaw(
+		const FString& EventName,
+		const int MessageId,
+		const sio::message::list& MessageList = nullptr);
 
 
 	/**

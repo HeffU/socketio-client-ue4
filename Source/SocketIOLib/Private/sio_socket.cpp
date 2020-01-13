@@ -596,6 +596,11 @@ namespace sio
     {
         m_impl->emit(name, msglist,ack);
     }
+
+	void socket::ack(int msgId, std::string const& name, message::list const& msglist)
+	{
+		m_impl->ack(msgId, name, msglist);
+	}
     
     std::string const& socket::get_namespace() const
     {
