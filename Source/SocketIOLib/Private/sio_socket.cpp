@@ -34,7 +34,7 @@ namespace sio
     public:
         static void adapt_func(socket::event_listener_aux  const& func, event& event)
         {
-            func(event.get_name(),event.get_message(),event.need_ack(),event.get_ack_message_impl());
+            func(event.get_name(),event.get_message(),event.need_ack(),event.get_ack_message_impl(), event.get_message_id());
         }
         
         static inline socket::event_listener do_adapt(socket::event_listener_aux const& func)
@@ -42,9 +42,9 @@ namespace sio
             return std::bind(&event_adapter::adapt_func, func,std::placeholders::_1);
         }
         
-        static inline event create_event(std::string const& nsp,std::string const& name,message::list&& message,bool need_ack)
+        static inline event create_event(std::string const& nsp,std::string const& name,message::list&& message,bool need_ack, int msgId)
         {
-            return event(nsp,name,message,need_ack);
+            return event(nsp,name,message,need_ack,msgId);
         }
     };
     
@@ -86,7 +86,8 @@ namespace sio
     }
     
     inline
-    event::event(std::string const& nsp,std::string const& name,message::list&& messages,bool need_ack):
+    event::event(std::string const& nsp,std::string const& name,message::list&& messages,bool need_ack, int msgId):
+		m_msgId(msgId),
         m_nsp(nsp),
         m_name(name),
         m_messages(std::move(messages)),
@@ -95,7 +96,8 @@ namespace sio
     }
 
     inline
-    event::event(std::string const& nsp,std::string const& name,message::list const& messages,bool need_ack):
+    event::event(std::string const& nsp,std::string const& name,message::list const& messages,bool need_ack, int msgId):
+		m_msgId(msgId),
         m_nsp(nsp),
         m_name(name),
         m_messages(messages),
@@ -107,6 +109,11 @@ namespace sio
     {
         return m_ack_message;
     }
+
+	int event::get_message_id() const
+	{
+		return m_msgId;
+	}
     
     inline
     message::list& event::get_ack_message_impl()
@@ -455,7 +462,7 @@ namespace sio
     void socket::impl::on_socketio_event(const std::string& nsp,int msgId,const std::string& name, message::list && message)
     {
         bool needAck = msgId >= 0;
-        event ev = event_adapter::create_event(nsp,name, std::move(message),needAck);
+        event ev = event_adapter::create_event(nsp,name, std::move(message),needAck, msgId);
         event_listener func = this->get_bind_listener_locked(name);
         if(func)func(ev);
         if(needAck && m_auto_ack)

@@ -271,6 +271,23 @@ void FSocketIONative::OnEvent(const FString& EventName,
 	}, Namespace, CallbackThread);
 }
 
+void FSocketIONative::OnEventWithMessageId(const FString& EventName,
+	TFunction< void(const FString&, const TSharedPtr<FJsonValue>&, const int)> CallbackFunction,
+	const FString& Namespace /*= FString(TEXT("/"))*/,
+	ESIOThreadOverrideOption CallbackThread /*= USE_DEFAULT*/)
+{
+	// TODO: Figure out some better architecture here, and whether or not we actualy need this mapping for our purposes
+	//Keep track of all the bound native JsonValue functions
+	//FSIOBoundEvent BoundEvent;
+	//BoundEvent.Function = CallbackFunction;
+	//BoundEvent.Namespace = Namespace;
+	//EventFunctionMap.Add(EventName, BoundEvent);
+
+	OnRawEventWithMessageId(EventName, [&, CallbackFunction](const FString& Event, const sio::message::ptr& RawMessage, const int MessageId) {
+		CallbackFunction(Event, USIOMessageConvert::ToJsonValue(RawMessage), MessageId);
+	}, Namespace, CallbackThread);
+}
+
 void FSocketIONative::OnRawEvent(const FString& EventName, 
 	TFunction< void(const FString&, const sio::message::ptr&)> CallbackFunction, 
 	const FString& Namespace /*= FString(TEXT("/"))*/,
@@ -297,7 +314,7 @@ void FSocketIONative::OnRawEvent(const FString& EventName,
 	PrivateClient->socket(USIOMessageConvert::StdString(Namespace))->on(
 		USIOMessageConvert::StdString(EventName),
 		sio::socket::event_listener_aux(
-			[&, SafeFunction, bCallbackThisEventOnGameThread](std::string const& name, sio::message::ptr const& data, bool isAck, sio::message::list &ack_resp)
+			[&, SafeFunction, bCallbackThisEventOnGameThread](std::string const& name, sio::message::ptr const& data, bool isAck, sio::message::list &ack_resp, int msgId)
 	{
 		const FString SafeName = USIOMessageConvert::FStringFromStd(name);
 
@@ -316,6 +333,51 @@ void FSocketIONative::OnRawEvent(const FString& EventName,
 	}));
 }
 
+void FSocketIONative::OnRawEventWithMessageId(const FString& EventName,
+	TFunction< void(const FString&, const sio::message::ptr&, const int)> CallbackFunction,
+	const FString& Namespace /*= FString(TEXT("/"))*/,
+	ESIOThreadOverrideOption CallbackThread /*= USE_DEFAULT*/)
+{
+	const TFunction< void(const FString&, const sio::message::ptr&, const int)> SafeFunction = CallbackFunction;	//copy the function so it remains in context
+
+	//determine thread override option
+	bool bCallbackThisEventOnGameThread = bCallbackOnGameThread;
+	switch (CallbackThread)
+	{
+	case USE_DEFAULT:
+		break;
+	case USE_GAME_THREAD:
+		bCallbackThisEventOnGameThread = true;
+		break;
+	case USE_NETWORK_THREAD:
+		bCallbackThisEventOnGameThread = false;
+		break;
+	default:
+		break;
+	}
+
+	PrivateClient->socket(USIOMessageConvert::StdString(Namespace))->on(
+		USIOMessageConvert::StdString(EventName),
+		sio::socket::event_listener_aux(
+			[&, SafeFunction, bCallbackThisEventOnGameThread](std::string const& name, sio::message::ptr const& data, bool isAck, sio::message::list &ack_resp, int msgId)
+	{
+		const FString SafeName = USIOMessageConvert::FStringFromStd(name);
+
+
+		if (bCallbackThisEventOnGameThread)
+		{
+			FCULambdaRunnable::RunShortLambdaOnGameThread([&, SafeFunction, SafeName, data, msgId]
+			{
+				SafeFunction(SafeName, data, msgId);
+			});
+		}
+		else
+		{
+			SafeFunction(SafeName, data, msgId);
+		}
+	}));
+}
+
 void FSocketIONative::OnBinaryEvent(const FString& EventName, TFunction< void(const FString&, const TArray<uint8>&)> CallbackFunction, const FString& Namespace /*= FString(TEXT("/"))*/)
 {
 	const TFunction< void(const FString&, const TArray<uint8>&)> SafeFunction = CallbackFunction;	//copy the function so it remains in context
@@ -323,7 +385,7 @@ void FSocketIONative::OnBinaryEvent(const FString& EventName, TFunction< void(co
 	PrivateClient->socket(USIOMessageConvert::StdString(Namespace))->on(
 		USIOMessageConvert::StdString(EventName),
 		sio::socket::event_listener_aux(
-			[&, SafeFunction](std::string const& name, sio::message::ptr const& data, bool isAck, sio::message::list &ack_resp)
+			[&, SafeFunction](std::string const& name, sio::message::ptr const& data, bool isAck, sio::message::list &ack_resp, int msgId)
 	{
 		const FString SafeName = USIOMessageConvert::FStringFromStd(name);
 

@@ -26,13 +26,16 @@ namespace sio
 
         message::list const& get_ack_message() const;
 
+		int get_message_id() const;
+
     protected:
-        event(std::string const& nsp,std::string const& name,message::list const& messages,bool need_ack);
-        event(std::string const& nsp,std::string const& name,message::list&& messages,bool need_ack);
+        event(std::string const& nsp,std::string const& name,message::list const& messages,bool need_ack, int msgId);
+        event(std::string const& nsp,std::string const& name,message::list&& messages,bool need_ack, int msgId);
 
         message::list& get_ack_message_impl();
 
     private:
+		const int m_msgId;
         const std::string m_nsp;
         const std::string m_name;
         const message::list m_messages;
@@ -49,7 +52,7 @@ namespace sio
     class SOCKETIOLIB_API socket
     {
     public:
-        typedef std::function<void(const std::string& name,message::ptr const& message,bool need_ack, message::list& ack_message)> event_listener_aux;
+        typedef std::function<void(const std::string& name,message::ptr const& message,bool need_ack, message::list& ack_message, int msgId)> event_listener_aux;
 
         typedef std::function<void(event& event)> event_listener;
 

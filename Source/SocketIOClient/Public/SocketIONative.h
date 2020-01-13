@@ -363,6 +363,20 @@ public:
 		ESIOThreadOverrideOption CallbackThread = USE_DEFAULT);
 
 	/**
+	* Call function callback on receiving socket event. C++ only.
+	*
+	* @param EventName	Event name
+	* @param TFunction	Lambda callback, JSONValue
+	* @param Namespace	Optional namespace, defaults to default namespace
+	* @param CallbackThread Override default bCallbackOnGameThread option to specified option for this event
+	*/
+	void OnEventWithMessageId(
+		const FString& EventName,
+		TFunction< void(const FString&, const TSharedPtr<FJsonValue>&, const int)> CallbackFunction,
+		const FString& Namespace = TEXT("/"),
+		ESIOThreadOverrideOption CallbackThread = USE_DEFAULT);
+
+	/**
 	* Call function callback on receiving raw event. C++ only.
 	*
 	* @param EventName	Event name
@@ -375,6 +389,21 @@ public:
 		TFunction< void(const FString&, const sio::message::ptr&)> CallbackFunction,
 		const FString& Namespace = TEXT("/"),
 		ESIOThreadOverrideOption CallbackThread = USE_DEFAULT);
+
+	/**
+	* Call function callback on receiving raw event. C++ only.
+	*
+	* @param EventName	Event name
+	* @param TFunction	Lambda callback, raw flavor
+	* @param Namespace	Optional namespace, defaults to default namespace
+	* @param CallbackThread Override default bCallbackOnGameThread option to specified option for this event
+	*/
+	void OnRawEventWithMessageId(
+		const FString& EventName,
+		TFunction< void(const FString&, const sio::message::ptr&, const int)> CallbackFunction,
+		const FString& Namespace = TEXT("/"),
+		ESIOThreadOverrideOption CallbackThread = USE_DEFAULT);
+
 	/**
 	* Call function callback on receiving binary event. C++ only.
 	*
