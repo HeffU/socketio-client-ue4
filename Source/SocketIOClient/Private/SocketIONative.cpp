@@ -255,35 +255,35 @@ void FSocketIONative::EmitRawBinary(const FString& EventName, uint8* Data, int32
 	PrivateClient->socket(USIOMessageConvert::StdString(Namespace))->emit(USIOMessageConvert::StdString(EventName), std::make_shared<std::string>((char*)Data, DataLength));
 }
 
-void FSocketIONative::Ack(const FString & EventName, const int MessageId, const TSharedPtr<FJsonValue>& Message)
+void FSocketIONative::Ack(const FString& Namespace, const FString& EventName, const int MessageId, const TSharedPtr<FJsonValue>& Message)
 {
-	AckRaw(EventName, MessageId, USIOMessageConvert::ToSIOMessage(Message));
+	AckRaw(Namespace, EventName, MessageId, USIOMessageConvert::ToSIOMessage(Message));
 }
 
-void FSocketIONative::Ack(const FString & EventName, const int MessageId, const TSharedPtr<FJsonObject>& ObjectMessage)
+void FSocketIONative::Ack(const FString& Namespace, const FString& EventName, const int MessageId, const TSharedPtr<FJsonObject>& ObjectMessage)
 {
-	AckRaw(EventName, MessageId, USIOMessageConvert::ToSIOMessage(MakeShareable(new FJsonValueObject(ObjectMessage))));
+	AckRaw(Namespace, EventName, MessageId, USIOMessageConvert::ToSIOMessage(MakeShareable(new FJsonValueObject(ObjectMessage))));
 }
 
-void FSocketIONative::Ack(const FString & EventName, const int MessageId, const TArray<TSharedPtr<FJsonValue>>& ArrayMessage)
+void FSocketIONative::Ack(const FString& Namespace, const FString& EventName, const int MessageId, const TArray<TSharedPtr<FJsonValue>>& ArrayMessage)
 {
-	AckRaw(EventName, MessageId, USIOMessageConvert::ToSIOMessage(MakeShareable(new FJsonValueArray(ArrayMessage))));
+	AckRaw(Namespace, EventName, MessageId, USIOMessageConvert::ToSIOMessage(MakeShareable(new FJsonValueArray(ArrayMessage))));
 }
 
-void FSocketIONative::Ack(const FString & EventName, const int MessageId, const FString & Message)
+void FSocketIONative::Ack(const FString& Namespace, const FString& EventName, const int MessageId, const FString & Message)
 {
-	AckRaw(EventName, MessageId, USIOMessageConvert::ToSIOMessage(MakeShareable(new FJsonValueString(Message))));
+	AckRaw(Namespace, EventName, MessageId, USIOMessageConvert::ToSIOMessage(MakeShareable(new FJsonValueString(Message))));
 }
 
-void FSocketIONative::AckNoMessage(const FString & EventName, const int MessageId)
+void FSocketIONative::AckNoMessage(const FString& Namespace, const FString& EventName, const int MessageId)
 {
 	TSharedPtr<FJsonValue> NoneValue;
-	AckRaw(EventName, MessageId, USIOMessageConvert::ToSIOMessage(NoneValue));
+	AckRaw(Namespace, EventName, MessageId, USIOMessageConvert::ToSIOMessage(NoneValue));
 }
 
-void FSocketIONative::AckRaw(const FString & EventName, const int MessageId, const sio::message::list & MessageList)
+void FSocketIONative::AckRaw(const FString& Namespace, const FString& EventName, const int MessageId, const sio::message::list & MessageList)
 {
-		PrivateClient->socket(USIOMessageConvert::StdString(TEXT("/")))->ack(
+		PrivateClient->socket(USIOMessageConvert::StdString(Namespace))->ack(
 		MessageId,
 		USIOMessageConvert::StdString(EventName),
 		MessageList);
