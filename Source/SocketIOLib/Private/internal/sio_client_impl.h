@@ -194,7 +194,7 @@ namespace sio
 		//socketio callbacks
 		void on_handshake(message::ptr const& message);
 
-		void on_pong();
+		void on_ping();
 
 		void reset_states();
 
@@ -223,8 +223,6 @@ namespace sio
 		std::unique_ptr<std::thread> m_network_thread;
 
 		packet_manager m_packet_mgr;
-
-		std::unique_ptr<asio::system_timer> m_ping_timer;
 
 		std::unique_ptr<asio::system_timer> m_ping_timeout_timer;
 

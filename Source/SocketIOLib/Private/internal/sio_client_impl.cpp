@@ -329,12 +329,6 @@ namespace sio
 		});
 
 		lib::error_code e_code = lib::error_code(asio::error::operation_aborted);
-		if(m_ping_timer)
-		{
-			m_ping_timer->expires_from_now(std::chrono::milliseconds(m_ping_interval), e_code);
-			m_ping_timer->async_wait(lib::bind(&client_impl::ping,this,lib::placeholders::_1));
-			DEBUG_LOG(LogTemp, Log, TEXT("Starting ping timeout 1"));
-		}
 		if (!m_ping_timeout_timer)
 		{
 			m_ping_timeout_timer.reset(new asio::system_timer(m_client.get_io_service()));
@@ -547,17 +541,6 @@ namespace sio
 				m_ping_timeout = 60000;
 			}
 
-			m_ping_timer.reset(new asio::system_timer(m_client.get_io_service()));
-
-			lib::error_code ec;
-			m_ping_timer->expires_from_now(std::chrono::milliseconds(m_ping_interval), ec);
-			if (ec) {
-				DEBUG_LOG(LogTemp, Log, TEXT("on_handshake ec: %s"), ec.message().c_str());
-			}
-			//DEBUG_LOG(LogTemp, Log, TEXT("Started ping timeout due to on_handshake"));
-
-			m_ping_timer->async_wait(lib::bind(&client_impl::ping,this,lib::placeholders::_1));
-			//DEBUG_LOG(LogTemp, Log, TEXT("On handshake,sid: %s, ping interval: %d, ping timeout: %d "), *FString(m_sid.c_str()), m_ping_interval, m_ping_timeout);
 			return;
 		}
 failed:
@@ -565,8 +548,14 @@ failed:
 		m_client.get_io_service().dispatch(lib::bind(&client_impl::close_impl, this,close::status::policy_violation,"Handshake error"));
 	}
 
-	void client_impl::on_pong()
+	void client_impl::on_ping()
 	{
+		packet p(packet::frame_pong);
+        m_packet_mgr.encode(p, [&](bool /*isBin*/,shared_ptr<const string> payload)
+        {
+            this->m_client.send(this->m_con, *payload, frame::opcode::text);
+        });
+
 		DEBUG_LOG(LogTemp, Log, TEXT("Received pong"));
 		if(m_ping_timeout_timer)
 		{
@@ -594,8 +583,8 @@ failed:
 			//FIXME how to deal?
 			this->close_impl(close::status::abnormal_close, "End by server");
 			break;
-		case packet::frame_pong:
-			this->on_pong();
+		case packet::frame_ping:
+			this->on_ping();
 			break;
 
 		default:
@@ -618,12 +607,6 @@ failed:
 			m_ping_timeout_timer->cancel(ec);
 			m_ping_timeout_timer.reset();
 			//DEBUG_LOG(LogTemp, Log, TEXT("m_ping_timeout_timer cleared: %d"), ec.value());
-		}
-		if(m_ping_timer)
-		{
-			m_ping_timer->cancel(ec);
-			m_ping_timer.reset();
-			//DEBUG_LOG(LogTemp, Log, TEXT("m_ping_timer cleared: %d"), ec.value());
 		}
 	}
 
